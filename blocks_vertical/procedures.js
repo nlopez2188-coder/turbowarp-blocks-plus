@@ -798,6 +798,25 @@ Blockly.ScratchBlocks.ProcedureUtils.updateArgumentReporterNames_ = function(pre
     }
   }
 
+  // Add to the top with other parsing functions
+Blockly.ScratchBlocks.ProcedureUtils.parseExtendableMutation = function(xmlElement) {
+    if (xmlElement.hasAttribute('extendable')) {
+        return parseInt(xmlElement.getAttribute('extendable'), 10);
+    }
+    return 0; // Default: not extended
+};
+
+// Update definitionMutationToDom to include the extendable count
+const originalDefinitionMutationToDom = Blockly.ScratchBlocks.ProcedureUtils.definitionMutationToDom;
+Blockly.ScratchBlocks.ProcedureUtils.definitionMutationToDom = function(opt_generateShadows) {
+    var container = originalDefinitionMutationToDom.call(this, opt_generateShadows);
+    if (this.extendableCount_) {
+        container.setAttribute('extendable', this.extendableCount_);
+    }
+    return container;
+};
+
+
   // Create a list of "name changes", including the new name and blocks matching the old name
   // Only search over the current set of argument ids, ignore args that have been removed
   for (var i = 0, id; id = this.argumentIds_[i]; i++) {
