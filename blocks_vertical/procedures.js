@@ -240,49 +240,24 @@ Blockly.ScratchBlocks.ProcedureUtils.removeAllInputs_ = function() {
  * @this Blockly.Block
  */
 Blockly.ScratchBlocks.ProcedureUtils.createAllInputs_ = function(connectionMap) {
-  // Split the proc into components, by %n, %b, and %s (ignoring escaped).
-  var procComponents = this.procCode_.split(/(?=[^\\]%[nbs])/);
-  procComponents = procComponents.map(function(c) {
-    return c.trim(); // Strip whitespace.
-  });
-  // Create arguments and labels as appropriate.
-  var argumentCount = 0;
-  var hasAnyField = false;
-  for (var i = 0, component; component = procComponents[i]; i++) {
-    var labelText;
-    if (component.substring(0, 1) == '%') {
-      var argumentType = component.substring(1, 2);
-      if (!(argumentType == 'n' || argumentType == 'b' || argumentType == 's')) {
-        throw new Error(
-            'Found an custom procedure with an invalid type: ' + argumentType);
-      }
-      labelText = component.substring(2).trim();
+    // ... existing code that parses procCode ...
 
-      var id = this.argumentIds_[argumentCount];
-
-      var input = this.appendValueInput(id);
-      if (argumentType == 'b') {
-        input.setCheck('Boolean');
-      }
-      this.populateArgument_(argumentType, argumentCount, connectionMap, id,
-          input);
-      hasAnyField = true;
-      argumentCount++;
-    } else {
-      labelText = component.trim();
+    // ADD THIS: Create the dynamic 'case' inputs
+    if (this.extendableCount_) {
+        for (var i = 0; i < this.extendableCount_; i++) {
+            this.appendValueInput('CASE' + i)
+                .appendField('case');
+            // Reconnect blocks if they existed before the UI update
+            if (connectionMap['CASE' + i]) {
+                connectionMap['CASE' + i].connection.reconnect(this, 'CASE' + i);
+            }
+        }
+        // Optional: Add the 'default' slot shown in your image
+        this.appendStatementInput('DEFAULT')
+            .appendField('default');
     }
-    labelText = labelText.replace(/\\%/, '%');
-    // don't add empty labels which will just waste space
-    if (labelText) {
-      this.addProcedureLabel_(labelText);
-      hasAnyField = true;
-    }
-  }
-  // Custom reporters will crash editor if they have no fields.
-  if (!hasAnyField) {
-    this.addProcedureLabel_(' ');
-  }
 };
+
 
 /**
  * Delete all shadow blocks in the given map.
